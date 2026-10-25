@@ -103,6 +103,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   type="button"
+                  onClick={() => handleNav('gear')}
+                  className="hover:text-[#C98833] transition-colors"
+                >
+                  Tech &amp; Gear Checklist
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
                   onClick={() => handleNav('community')}
                   className="hover:text-[#C98833] transition-colors"
                 >

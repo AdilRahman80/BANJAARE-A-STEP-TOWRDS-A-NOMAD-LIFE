@@ -12,6 +12,9 @@ import {
   Users,
   Wallet,
   Building2,
+  PackageCheck,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Currency } from '../../types/trip';
 import { CURRENCIES } from '../../data/destinations';
@@ -23,6 +26,7 @@ export type NavTab =
   | 'planner'
   | 'coliving'
   | 'itinerary'
+  | 'gear'
   | 'community'
   | 'passport'
   | 'residence'
@@ -33,6 +37,8 @@ interface NavbarProps {
   onCurrencyChange: (currency: Currency) => void;
   activeTab: NavTab;
   onTabChange: (tab: NavTab) => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -40,6 +46,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onCurrencyChange,
   activeTab,
   onTabChange,
+  theme,
+  onToggleTheme,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -50,6 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'planner', label: 'Trip Architect', icon: TrendingUp },
     { id: 'coliving', label: 'Coliving & Desks', icon: Building },
     { id: 'itinerary', label: 'Routine', icon: Calendar },
+    { id: 'gear', label: 'Gear Kit', icon: PackageCheck },
     { id: 'community', label: 'Community', icon: Users },
     { id: 'passport', label: 'Tax & Surplus', icon: Wallet },
     { id: 'residence', label: 'Residencies', icon: Building2 },
@@ -141,6 +150,26 @@ export const Navbar: React.FC<NavbarProps> = ({
               </select>
             </div>
 
+            {/* Theme Toggle Button (Light by default / Dark forest option) */}
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className="inline-flex items-center gap-1.5 py-2 px-3 rounded-xl bg-[#0F262E] hover:bg-[#14313B] border border-[#1D4552] text-xs font-semibold text-[#C98833] transition-colors"
+              title={`Switch to ${theme === 'light' ? 'Dark Forest' : 'Bright Luxury'} Theme`}
+            >
+              {theme === 'light' ? (
+                <>
+                  <Moon className="w-3.5 h-3.5" />
+                  <span className="hidden xl:inline text-slate-300">Night</span>
+                </>
+              ) : (
+                <>
+                  <Sun className="w-3.5 h-3.5" />
+                  <span className="hidden xl:inline text-slate-300">Light</span>
+                </>
+              )}
+            </button>
+
             {/* CTA */}
             <button
               type="button"
@@ -154,6 +183,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Mobile Menu Button */}
           <div className="flex items-center gap-2 lg:hidden">
+            {/* Mobile Theme Toggle */}
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className="p-2 rounded-xl bg-[#0F262E] text-[#C98833] border border-[#1D4552]"
+              title="Toggle Theme"
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
+
             <select
               value={currentCurrency}
               onChange={(e) => onCurrencyChange(e.target.value as Currency)}

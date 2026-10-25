@@ -11,6 +11,12 @@ import {
   Landmark,
   Calculator,
   CheckCircle2,
+  Plus,
+  Trash2,
+  Calendar,
+  Globe2,
+  Clock,
+  AlertTriangle,
 } from 'lucide-react';
 import { calculateSection44ADATax, calculateEarnToTravelRatio } from '../utils/taxCalculator';
 import { Currency } from '../types/trip';
@@ -20,6 +26,21 @@ interface FinancialPassportViewProps {
   onShowToast: (msg: string) => void;
   onNavigateToPlanner: () => void;
 }
+
+interface ExpenseLog {
+  id: string;
+  category: 'Stay' | 'Coworking' | 'Food' | 'Transit' | 'Leisure';
+  title: string;
+  amountINR: number;
+  date: string;
+}
+
+const DEFAULT_EXPENSES: ExpenseLog[] = [
+  { id: 'exp-1', category: 'Stay', title: 'Assagao Garden Villa (1 Week)', amountINR: 8500, date: 'Today' },
+  { id: 'exp-2', category: 'Coworking', title: 'Clay Cafe 100Mbps Weekly Pass', amountINR: 2200, date: 'Yesterday' },
+  { id: 'exp-3', category: 'Transit', title: 'Activa Scooter 7-Day Rental', amountINR: 2100, date: '2 days ago' },
+  { id: 'exp-4', category: 'Food', title: 'Grounded Cafe Pour-Over & Brunch', amountINR: 750, date: '3 days ago' },
+];
 
 export const FinancialPassportView: React.FC<FinancialPassportViewProps> = ({
   currentCurrency: _currentCurrency,
@@ -31,9 +52,22 @@ export const FinancialPassportView: React.FC<FinancialPassportViewProps> = ({
   const [activeMonthlyTripCostINR, setActiveMonthlyTripCostINR] = useState<number>(32000); // e.g. 1 month in Goa
   const [currencySymbol] = useState<string>('₹');
 
+  // Real-time expense tracker
+  const [expenses, setExpenses] = useState<ExpenseLog[]>(DEFAULT_EXPENSES);
+  const [newExpenseTitle, setNewExpenseTitle] = useState<string>('');
+  const [newExpenseCategory, setNewExpenseCategory] = useState<'Stay' | 'Coworking' | 'Food' | 'Transit' | 'Leisure'>('Food');
+  const [newExpenseAmount, setNewExpenseAmount] = useState<number>(500);
+
+  // Tax Residency Days counter (182 days rule)
+  const [daysOutsideHome, setDaysOutsideHome] = useState<number>(75);
+
   const monthlyGrossINR = Math.round(annualGrossINR / 12);
   const taxResult = calculateSection44ADATax(annualGrossINR);
   const earnToTravel = calculateEarnToTravelRatio(monthlyGrossINR, activeMonthlyTripCostINR);
+
+  const totalSpentSoFar = expenses.reduce((sum, e) => sum + e.amountINR, 0);
+  const remainingBudget = Math.max(0, activeMonthlyTripCostINR - totalSpentSoFar);
+  const liveNetSurplus = monthlyGrossINR - totalSpentSoFar;
 
   const destinationBench = [
     { city: 'Goa (Assagao / Anjuna)', monthlyCost: 32000, daysToBreakEven: calculateEarnToTravelRatio(monthlyGrossINR, 32000).billableDaysNeeded },
@@ -42,6 +76,27 @@ export const FinancialPassportView: React.FC<FinancialPassportViewProps> = ({
     { city: 'Rishikesh (Tapovan)', monthlyCost: 20000, daysToBreakEven: calculateEarnToTravelRatio(monthlyGrossINR, 20000).billableDaysNeeded },
     { city: 'Bali (Canggu / Ubud)', monthlyCost: 65000, daysToBreakEven: calculateEarnToTravelRatio(monthlyGrossINR, 65000).billableDaysNeeded },
   ];
+
+  const handleAddExpense = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newExpenseTitle.trim()) return;
+
+    const created: ExpenseLog = {
+      id: `exp-${Date.now()}`,
+      category: newExpenseCategory,
+      title: newExpenseTitle,
+      amountINR: newExpenseAmount,
+      date: 'Just now',
+    };
+
+    setExpenses([created, ...expenses]);
+    setNewExpenseTitle('');
+    onShowToast(`Logged expense: ${currencySymbol}${newExpenseAmount} for ${newExpenseTitle}`);
+  };
+
+  const handleDeleteExpense = (id: string) => {
+    setExpenses(expenses.filter((e) => e.id !== id));
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
@@ -59,7 +114,7 @@ export const FinancialPassportView: React.FC<FinancialPassportViewProps> = ({
         <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
           The traditional world tells you quitting the 9-to-5 loop is reckless.
           In reality, the Indian Income Tax Act offers massive presumptive benefits under Section 44ADA for freelance knowledge workers.
-          See your exact tax savings, net in-hand surplus, and break-even metrics across workation destinations.
+          See your exact tax savings, net in-hand surplus, stay duration rules, and live daily expense tracking.
         </p>
       </div>
 
@@ -295,7 +350,196 @@ export const FinancialPassportView: React.FC<FinancialPassportViewProps> = ({
             </table>
           </div>
         </div>
+      </div>
 
+      {/* ─── 4. LIVE EXPENSE & SURPLUS MICRO-LEDGER (Novel Value-Add Feature) ─── */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-[#0F262E] border border-[#1D4552] space-y-6 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1D4552]/70">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#C98833] uppercase tracking-wider mb-1">
+              <Calendar className="w-4 h-4" />
+              <span>Live Workation Micro-Ledger</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#FAFDFD]">
+              Track Real-Time On-Ground Spending
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Log your daily coffees, coworking passes, and stay costs. See if your projected surplus holds true.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="px-3.5 py-2 rounded-xl bg-[#071317] border border-[#1D4552] text-xs">
+              <span className="text-slate-400 block text-[10px]">Total Spent:</span>
+              <span className="text-base font-bold text-[#FAFDFD]">{currencySymbol}{totalSpentSoFar.toLocaleString('en-IN')}</span>
+            </div>
+            <div className="px-3.5 py-2 rounded-xl bg-[#071317] border border-[#1D4552] text-xs">
+              <span className="text-slate-400 block text-[10px]">Budget Remaining:</span>
+              <span className="text-base font-bold text-[#C98833]">{currencySymbol}{remainingBudget.toLocaleString('en-IN')}</span>
+            </div>
+            <div className="px-3.5 py-2 rounded-xl bg-[#071317] border border-[#1D4552] text-xs">
+              <span className="text-slate-400 block text-[10px]">Net Surplus Left:</span>
+              <span className="text-base font-bold text-emerald-400">+{currencySymbol}{liveNetSurplus.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Log New Expense Bar */}
+        <form onSubmit={handleAddExpense} className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-[#071317] border border-[#1D4552]">
+          <div className="sm:col-span-2">
+            <input
+              type="text"
+              required
+              value={newExpenseTitle}
+              onChange={(e) => setNewExpenseTitle(e.target.value)}
+              placeholder="Expense description (e.g. Clay Coworking Pass, Sunset Dinner)"
+              className="w-full px-3 py-2 bg-[#0F262E] border border-[#1D4552] rounded-xl text-xs text-white focus:outline-none focus:border-[#C98833]"
+            />
+          </div>
+          <div>
+            <select
+              value={newExpenseCategory}
+              onChange={(e) => setNewExpenseCategory(e.target.value as any)}
+              className="w-full px-3 py-2 bg-[#0F262E] border border-[#1D4552] rounded-xl text-xs text-white focus:outline-none focus:border-[#C98833]"
+            >
+              <option value="Stay">Stay</option>
+              <option value="Coworking">Coworking Pass</option>
+              <option value="Food">Food &amp; Dining</option>
+              <option value="Transit">Transit &amp; Scooter</option>
+              <option value="Leisure">Leisure &amp; Treks</option>
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              required
+              value={newExpenseAmount}
+              onChange={(e) => setNewExpenseAmount(parseInt(e.target.value) || 0)}
+              className="w-24 px-3 py-2 bg-[#0F262E] border border-[#1D4552] rounded-xl text-xs text-[#C98833] font-bold focus:outline-none focus:border-[#C98833]"
+            />
+            <button
+              type="submit"
+              className="flex-1 py-2 px-3 rounded-xl bg-[#C98833] hover:bg-[#DE9F4D] text-black font-bold text-xs flex items-center justify-center gap-1 shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Log</span>
+            </button>
+          </div>
+        </form>
+
+        {/* Expenses List */}
+        <div className="space-y-2">
+          {expenses.map((exp) => (
+            <div
+              key={exp.id}
+              className="p-3.5 rounded-xl bg-[#071317]/80 border border-[#1D4552] flex items-center justify-between text-xs"
+            >
+              <div className="flex items-center gap-3">
+                <span className="px-2 py-0.5 rounded-md bg-[#14313B] text-[10px] font-bold text-[#C98833] border border-[#1D4552]">
+                  {exp.category}
+                </span>
+                <span className="font-semibold text-white">{exp.title}</span>
+                <span className="text-slate-400 text-[11px] hidden sm:inline">• {exp.date}</span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="font-bold text-[#C98833]">{currencySymbol}{exp.amountINR.toLocaleString('en-IN')}</span>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteExpense(exp.id)}
+                  className="text-slate-500 hover:text-red-400 p-1"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ─── 5. STAY DURATION & PERMIT INTELLIGENCE (Novel Value-Add Feature) ─── */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-[#0F262E] border border-[#1D4552] space-y-6 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1D4552]/70">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#C98833] uppercase tracking-wider mb-1">
+              <Globe2 className="w-4 h-4" />
+              <span>Stay Duration &amp; Legal Residency Intelligence</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#FAFDFD]">
+              Permit Limits &amp; 182-Day Tax Residency Safe Zone
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Know exactly how long you can remain in specific Indian restricted zones and international digital nomad havens.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-[#071317] border border-[#1D4552] px-3.5 py-1.5 rounded-xl text-xs">
+            <Clock className="w-4 h-4 text-[#C98833]" />
+            <span className="font-bold text-slate-200">Days Travelled:</span>
+            <input
+              type="number"
+              min="0"
+              max="365"
+              value={daysOutsideHome}
+              onChange={(e) => setDaysOutsideHome(parseInt(e.target.value) || 0)}
+              className="w-14 bg-[#0F262E] border border-[#1D4552] text-[#C98833] font-bold rounded-lg px-2 py-0.5 text-center text-xs focus:outline-none focus:border-[#C98833]"
+            />
+            <span className="text-slate-400 text-[11px]">/ 182</span>
+          </div>
+        </div>
+
+        {/* 182-Day Tax Residency Meter */}
+        <div className="p-5 rounded-2xl bg-[#071317] border border-[#1D4552] space-y-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-bold text-slate-200">Indian 182-Day Resident/Non-Resident Safe Zone</span>
+            <span className="text-[#C98833] font-bold">{182 - daysOutsideHome} days remaining before status shift</span>
+          </div>
+          <div className="w-full h-2.5 bg-[#0F262E] rounded-full overflow-hidden border border-[#1D4552]">
+            <div
+              className="h-full bg-gradient-to-r from-emerald-500 to-[#C98833] rounded-full"
+              style={{ width: `${Math.min(100, Math.round((daysOutsideHome / 182) * 100))}%` }}
+            />
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+            <AlertTriangle className="w-3.5 h-3.5 text-[#C98833] shrink-0" />
+            <span>If spending 182+ days outside India, you may qualify for Non-Resident Indian (NRI) tax treatment on foreign freelance clients.</span>
+          </div>
+        </div>
+
+        {/* Global & Domestic Permit Rules Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+          <div className="p-4 rounded-2xl bg-[#071317] border border-[#1D4552] space-y-1.5">
+            <div className="font-bold text-[#C98833]">Ladakh / Spiti (ILP/PAP)</div>
+            <div className="text-slate-200 font-semibold">15 Days Renewable</div>
+            <p className="text-[11px] text-slate-400">
+              Inner Line Permits required for Nubra Valley, Pangong Tso, Hanle dark sky reserve.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-[#071317] border border-[#1D4552] space-y-1.5">
+            <div className="font-bold text-emerald-400">Bali / Indonesia (B211A)</div>
+            <div className="text-slate-200 font-semibold">60 Days (Ext. up to 180 Days)</div>
+            <p className="text-[11px] text-slate-400">
+              Remote worker visa allows working for clients outside Indonesia tax-free.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-[#071317] border border-[#1D4552] space-y-1.5">
+            <div className="font-bold text-purple-400">Thailand DTV Nomad Visa</div>
+            <div className="text-slate-200 font-semibold">180 Days Multiple Entry (5 Yrs)</div>
+            <p className="text-[11px] text-slate-400">
+              Requires 500,000 THB savings proof; permits full remote digital employment.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-[#071317] border border-[#1D4552] space-y-1.5">
+            <div className="font-bold text-blue-400">Goa &amp; Coastal States</div>
+            <div className="text-slate-200 font-semibold">Unlimited (Domestic Nomads)</div>
+            <p className="text-[11px] text-slate-400">
+              Rent agreements over 11 months require local tenant police verification.
+            </p>
+          </div>
+        </div>
       </div>
 
     </div>

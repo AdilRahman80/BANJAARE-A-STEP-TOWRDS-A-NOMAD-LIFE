@@ -12,6 +12,7 @@ import { ItineraryView } from './views/ItineraryView';
 import { CommunityView } from './views/CommunityView';
 import { FinancialPassportView } from './views/FinancialPassportView';
 import { ResidencePortalView } from './views/ResidencePortalView';
+import { GearView } from './views/GearView';
 import { AboutView } from './views/AboutView';
 
 import { SAMPLE_DESTINATIONS } from './data/destinations';
@@ -49,11 +50,33 @@ export function App() {
     'planner',
     'coliving',
     'itinerary',
+    'gear',
     'community',
     'passport',
     'residence',
     'about',
   ];
+
+  // Theme Management (Light by default as requested!)
+  const THEME_KEY = 'nomadx_theme_preference';
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === 'dark' || saved === 'light') return saved;
+    } catch {
+      // ignore
+    }
+    return 'light'; // Default to bright luxury light theme
+  });
+
+  useEffect(() => {
+    document.body.className = theme === 'light' ? 'theme-light' : 'theme-dark';
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      // ignore
+    }
+  }, [theme]);
 
   const [activeTab, setActiveTab] = useState<NavTab>(() => {
     const hash = window.location.hash.replace('#', '') as NavTab;
@@ -190,6 +213,14 @@ export function App() {
     showToast('Reset category spending multipliers.');
   };
 
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      showToast(`Switched to ${next === 'light' ? 'Bright Luxury' : 'Night Forest'} Theme`);
+      return next;
+    });
+  }, [showToast]);
+
   return (
     <div className="min-h-screen flex flex-col bg-[#071317] text-[#FAFDFD] selection:bg-[#C98833] selection:text-black">
       
@@ -219,6 +250,8 @@ export function App() {
         onCurrencyChange={setSelectedCurrency}
         activeTab={activeTab}
         onTabChange={handleTabChange}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Dedicated Page Views */}
@@ -290,6 +323,13 @@ export function App() {
 
         {activeTab === 'itinerary' && (
           <ItineraryView
+            onShowToast={showToast}
+            onNavigateToPlanner={() => handleTabChange('planner')}
+          />
+        )}
+
+        {activeTab === 'gear' && (
+          <GearView
             onShowToast={showToast}
             onNavigateToPlanner={() => handleTabChange('planner')}
           />

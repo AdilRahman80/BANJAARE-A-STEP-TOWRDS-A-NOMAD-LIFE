@@ -6,15 +6,110 @@
   html {
     scroll-behavior: smooth;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    background-color: #071317;
-    color: #FAFDFD;
   }
 
   body {
-    background-color: #071317;
-    color: #FAFDFD;
     font-family: 'Outfit', 'Inter', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
+}
+
+/* ─── ☀️ LIGHT THEME (DEFAULT BRIGHTER SIDE - VITA TRAVEL & ELOURA JOURNEYS) ─── */
+body.theme-light,
+:root:not(.dark) body {
+  background-color: #FAF8F5 !important;
+  color: #141A1E !important;
+}
+
+body.theme-light .bg-\[\#071317\] {
+  background-color: #FAF8F5 !important;
+}
+
+body.theme-light .bg-\[\#071317\]\/90 {
+  background-color: rgba(250, 248, 245, 0.94) !important;
+}
+
+body.theme-light .bg-\[\#071317\]\/85,
+body.theme-light .bg-\[\#071317\]\/80 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+body.theme-light .bg-\[\#071317\]\/60,
+body.theme-light .bg-\[\#071317\]\/50 {
+  background-color: #F5F2EB !important;
+}
+
+body.theme-light .bg-\[\#0F262E\] {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 4px 20px -2px rgba(20, 26, 30, 0.04);
+}
+
+body.theme-light .bg-\[\#0F262E\]\/90,
+body.theme-light .bg-\[\#0F262E\]\/80 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+body.theme-light .bg-\[\#14313B\] {
+  background-color: #F5F2EB !important;
+}
+
+body.theme-light .bg-\[\#14313B\]\/60 {
+  background-color: #EFEBE2 !important;
+}
+
+body.theme-light .hover\:bg-\[\#14313B\]:hover {
+  background-color: #EAE5DB !important;
+}
+
+body.theme-light .hover\:bg-\[\#1D4552\]:hover {
+  background-color: #E3DDD0 !important;
+}
+
+body.theme-light .border-\[\#1D4552\] {
+  border-color: #E5E0D8 !important;
+}
+
+body.theme-light .border-\[\#1D4552\]\/70,
+body.theme-light .border-\[\#1D4552\]\/60,
+body.theme-light .border-\[\#1D4552\]\/40 {
+  border-color: #ECE7DE !important;
+}
+
+body.theme-light .text-\[\#FAFDFD\] {
+  color: #141A1E !important;
+}
+
+body.theme-light .text-slate-300 {
+  color: #4A5568 !important;
+}
+
+body.theme-light .text-slate-400 {
+  color: #718096 !important;
+}
+
+body.theme-light .text-slate-200 {
+  color: #2D3748 !important;
+}
+
+body.theme-light .divide-\[\#1D4552\]\/60 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #ECE7DE !important;
+}
+
+/* Light Theme Scrollbar */
+body.theme-light::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+body.theme-light::-webkit-scrollbar-thumb {
+  background: #D8D2C7;
+}
+body.theme-light::-webkit-scrollbar-thumb:hover {
+  background: #C98833;
+}
+
+/* ─── 🌙 DARK THEME (FOREST OBSIDIAN) ─── */
+body.theme-dark {
+  background-color: #071317 !important;
+  color: #FAFDFD !important;
 }
 
 /* Custom modern scrollbar */
@@ -38,18 +133,8 @@ input[type="range"] {
   @apply accent-[#C98833] cursor-pointer;
 }
 
-/* Glassmorphism helpers matching Vita Travel */
+/* Glassmorphism helpers */
 .glass-panel {
-  background: rgba(15, 38, 46, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.luxury-border {
-  border: 1px solid rgba(201, 136, 51, 0.25);
-}
-
-.luxury-glow {
-  box-shadow: 0 10px 40px -10px rgba(201, 136, 51, 0.15);
 }
