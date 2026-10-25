@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-color: #071317;
+    color: #FAFDFD;
+  }
+
+  body {
+    background-color: #071317;
+    color: #FAFDFD;
+    font-family: 'Outfit', 'Inter', sans-serif;
+  }
+}
+
+/* Custom modern scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #071317;
+}
+::-webkit-scrollbar-thumb {
+  background: #1D4552;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C98833;
+}
+
+/* Range input styling for sleek sliders */
+input[type="range"] {
+  @apply accent-[#C98833] cursor-pointer;
+}
+
+/* Glassmorphism helpers matching Vita Travel */
+.glass-panel {
+  background: rgba(15, 38, 46, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.luxury-border {
+  border: 1px solid rgba(201, 136, 51, 0.25);
+}
+
+.luxury-glow {
+  box-shadow: 0 10px 40px -10px rgba(201, 136, 51, 0.15);
+}
