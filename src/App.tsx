@@ -9,6 +9,9 @@ import { DestinationsView } from './views/DestinationsView';
 import { PlannerView } from './views/PlannerView';
 import { ColivingView } from './views/ColivingView';
 import { ItineraryView } from './views/ItineraryView';
+import { CommunityView } from './views/CommunityView';
+import { FinancialPassportView } from './views/FinancialPassportView';
+import { ResidencePortalView } from './views/ResidencePortalView';
 import { AboutView } from './views/AboutView';
 
 import { SAMPLE_DESTINATIONS } from './data/destinations';
@@ -20,7 +23,7 @@ import {
 } from './types/trip';
 import { DEFAULT_CATEGORY_MODIFIERS } from './utils/budgetCalculator';
 import { getRecommendedDestinations, SortOption } from './utils/recommendationEngine';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, WifiOff } from 'lucide-react';
 
 const DEFAULT_PREFERENCES: TripPreferences = {
   originCity: 'New Delhi (NCR)',
@@ -39,9 +42,22 @@ const STORAGE_KEY = 'smart_trip_planner_saved_v1';
 
 export function App() {
   // 1. Multi-Page Active Tab state with URL hash sync
+  const validTabs: NavTab[] = [
+    'home',
+    'gigs',
+    'destinations',
+    'planner',
+    'coliving',
+    'itinerary',
+    'community',
+    'passport',
+    'residence',
+    'about',
+  ];
+
   const [activeTab, setActiveTab] = useState<NavTab>(() => {
     const hash = window.location.hash.replace('#', '') as NavTab;
-    if (['home', 'gigs', 'destinations', 'planner', 'coliving', 'itinerary', 'about'].includes(hash)) {
+    if (validTabs.includes(hash)) {
       return hash;
     }
     return 'home';
@@ -51,7 +67,7 @@ export function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '') as NavTab;
-      if (['home', 'gigs', 'destinations', 'planner', 'coliving', 'itinerary', 'about'].includes(hash)) {
+      if (validTabs.includes(hash)) {
         setActiveTab(hash);
       }
     };
@@ -116,6 +132,26 @@ export function App() {
     return () => clearTimeout(timer);
   }, [toastMessage]);
 
+  // Offline detection for PWA
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      showToast('Back online! Live syncing remote gigs and meetups.');
+    };
+    const handleOffline = () => {
+      setIsOffline(true);
+      showToast('Offline mode active. Workation schedules & cached plans accessible.');
+    };
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [showToast]);
+
   // 4. Recommended destinations computation
   const recommendedMatches = useMemo(() => {
     return getRecommendedDestinations(
@@ -166,6 +202,14 @@ export function App() {
         >
           <CheckCircle2 className="w-4 h-4 text-[#C98833] shrink-0" />
           <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Offline Status Banner */}
+      {isOffline && (
+        <div className="bg-[#C98833]/15 border-b border-[#C98833]/30 px-4 py-2 text-center text-xs text-[#FBA13A] font-semibold flex items-center justify-center gap-2">
+          <WifiOff className="w-3.5 h-3.5" />
+          <span>Offline Mode Active — Browsing cached itineraries and local plans seamlessly.</span>
         </div>
       )}
 
@@ -246,6 +290,28 @@ export function App() {
 
         {activeTab === 'itinerary' && (
           <ItineraryView
+            onShowToast={showToast}
+            onNavigateToPlanner={() => handleTabChange('planner')}
+          />
+        )}
+
+        {activeTab === 'community' && (
+          <CommunityView
+            onShowToast={showToast}
+            onNavigateToPlanner={() => handleTabChange('planner')}
+          />
+        )}
+
+        {activeTab === 'passport' && (
+          <FinancialPassportView
+            currentCurrency={selectedCurrency}
+            onShowToast={showToast}
+            onNavigateToPlanner={() => handleTabChange('planner')}
+          />
+        )}
+
+        {activeTab === 'residence' && (
+          <ResidencePortalView
             onShowToast={showToast}
             onNavigateToPlanner={() => handleTabChange('planner')}
           />

@@ -97,7 +97,34 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => handleNav('itinerary')}
                   className="hover:text-[#C98833] transition-colors"
                 >
-                  Work-Life Itinerary Studio
+                  Work-Life Routine Studio
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('community')}
+                  className="hover:text-[#C98833] transition-colors"
+                >
+                  Nomad Tribe &amp; Meetups
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('passport')}
+                  className="hover:text-[#C98833] transition-colors"
+                >
+                  Tax &amp; Financial Passport
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('residence')}
+                  className="hover:text-[#C98833] transition-colors"
+                >
+                  Nomad-in-Residence Slots
                 </button>
               </li>
               <li>

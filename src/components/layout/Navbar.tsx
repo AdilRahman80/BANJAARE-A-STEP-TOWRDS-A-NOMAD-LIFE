@@ -9,11 +9,24 @@ import {
   Calendar,
   Sparkles,
   ArrowRight,
+  Users,
+  Wallet,
+  Building2,
 } from 'lucide-react';
 import { Currency } from '../../types/trip';
 import { CURRENCIES } from '../../data/destinations';
 
-export type NavTab = 'home' | 'gigs' | 'destinations' | 'planner' | 'coliving' | 'itinerary' | 'about';
+export type NavTab =
+  | 'home'
+  | 'gigs'
+  | 'destinations'
+  | 'planner'
+  | 'coliving'
+  | 'itinerary'
+  | 'community'
+  | 'passport'
+  | 'residence'
+  | 'about';
 
 interface NavbarProps {
   currentCurrency: Currency;
@@ -36,8 +49,11 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'destinations', label: 'Destinations', icon: Compass },
     { id: 'planner', label: 'Trip Architect', icon: TrendingUp },
     { id: 'coliving', label: 'Coliving & Desks', icon: Building },
-    { id: 'itinerary', label: 'Itinerary', icon: Calendar },
-    { id: 'about', label: 'Our Story', icon: Compass },
+    { id: 'itinerary', label: 'Routine', icon: Calendar },
+    { id: 'community', label: 'Community', icon: Users },
+    { id: 'passport', label: 'Tax & Surplus', icon: Wallet },
+    { id: 'residence', label: 'Residencies', icon: Building2 },
+    { id: 'about', label: 'Manifesto', icon: Sparkles },
   ];
 
   const handleSelectTab = (tab: NavTab) => {

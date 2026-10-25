@@ -2,7 +2,9 @@ import { Destination, TripPreferences, RecommendationMatch } from '../types/trip
 import { calculateBudgetBreakdown, validateTripPreferences } from './budgetCalculator';
 import { estimateTransportCost, isTransportExceedingBudget } from './transitEstimator';
 
-export type SortOption = 'match' | 'price-asc' | 'price-desc' | 'rating';
+import { getDestinationNomadScore } from './nomadScoreEngine';
+
+export type SortOption = 'match' | 'nomad-score' | 'price-asc' | 'price-desc' | 'rating';
 
 /**
  * Calculates a duration compatibility score (0 - 100) based on how well the
@@ -276,6 +278,11 @@ export function getRecommendedDestinations(
   // 3. Sort results
   return scored.sort((a, b) => {
     switch (sortBy) {
+      case 'nomad-score':
+        return (
+          getDestinationNomadScore(b.destination, safePrefs.profession).finalScore -
+          getDestinationNomadScore(a.destination, safePrefs.profession).finalScore
+        );
       case 'price-asc':
         return a.estimatedTripCost - b.estimatedTripCost;
       case 'price-desc':

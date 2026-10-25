@@ -118,6 +118,7 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
                 className="bg-[#071317] border border-[#1D4552] text-slate-200 text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#C98833] cursor-pointer"
               >
                 <option value="match">Highest Match Score</option>
+                <option value="nomad-score">Top Nomad Score (Wi-Fi &amp; Desks)</option>
                 <option value="price-asc">Trip Cost: Low to High</option>
                 <option value="price-desc">Trip Cost: High to Low</option>
                 <option value="rating">Top Rated (Stars)</option>

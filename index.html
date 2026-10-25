@@ -2,8 +2,12 @@
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234F46E5' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 12a9 9 0 1 0 18 0a9 9 0 0 0-18 0'/><path d='M12 2v4m0 12v4M2 12h4m12 0h4'/><circle cx='12' cy='12' r='3' fill='%234F46E5' stroke='none'/></svg>" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071317" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>NomadX — Earn Where You Explore | India's Digital Nomad Launchpad</title>
     <meta name="description" content="NomadX helps you escape the 9-to-5 loop. Discover destinations where you can work remotely, earn well, and explore freely. Net surplus calculator, gig matching, co-working hubs and more." />
     <meta name="keywords" content="digital nomad India, remote work travel, earn while traveling, nomad lifestyle, work from Goa, work from Manali, remote jobs India, nomad itinerary" />
@@ -19,6 +23,12 @@
   <body class="bg-[#071317] text-[#FAFDFD] antialiased selection:bg-[#C98833] selection:text-black min-h-screen" style="font-family:'Outfit',sans-serif;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>
-

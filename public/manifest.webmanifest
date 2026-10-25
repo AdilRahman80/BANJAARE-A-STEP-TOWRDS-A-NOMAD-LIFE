@@ -1,0 +1,19 @@
+{
+  "name": "NomadX — Earn Where You Explore",
+  "short_name": "NomadX",
+  "description": "India's First Digital Nomad Launchpad. Work remotely, earn sustainably, and explore 54 global destinations.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#071317",
+  "theme_color": "#071317",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "productivity", "business"]
+}
