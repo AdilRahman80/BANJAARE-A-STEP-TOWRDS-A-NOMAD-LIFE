@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Wallet,
   ShieldCheck,
@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { calculateSection44ADATax, calculateEarnToTravelRatio } from '../utils/taxCalculator';
 import { Currency } from '../types/trip';
+import { useAuth } from '../context/AuthContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface FinancialPassportViewProps {
   currentCurrency: Currency;
@@ -47,6 +49,7 @@ export const FinancialPassportView: React.FC<FinancialPassportViewProps> = ({
   onShowToast,
   onNavigateToPlanner,
 }) => {
+  const { user } = useAuth();
   // Annual Gross freelance income in INR
   const [annualGrossINR, setAnnualGrossINR] = useState<number>(1200000); // 12 Lakhs default
   const [activeMonthlyTripCostINR, setActiveMonthlyTripCostINR] = useState<number>(32000); // e.g. 1 month in Goa
@@ -60,6 +63,35 @@ export const FinancialPassportView: React.FC<FinancialPassportViewProps> = ({
 
   // Tax Residency Days counter (182 days rule)
   const [daysOutsideHome, setDaysOutsideHome] = useState<number>(75);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !user) return;
+    
+    async function fetchExpenses() {
+      try {
+        const { data, error } = await supabase
+          .from('user_expenses')
+          .select('*')
+          .eq('user_id', user!.id)
+          .order('created_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          const mapped: ExpenseLog[] = data.map((d: any) => ({
+            id: d.id,
+            category: d.category as ExpenseLog['category'],
+            title: d.title,
+            amountINR: d.amount_inr,
+            date: new Date(d.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+          }));
+          setExpenses(mapped);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch expenses from Supabase:', err);
+      }
+    }
+
+    fetchExpenses();
+  }, [user]);
 
   const monthlyGrossINR = Math.round(annualGrossINR / 12);
   const taxResult = calculateSection44ADATax(annualGrossINR);
@@ -77,12 +109,13 @@ export const FinancialPassportView: React.FC<FinancialPassportViewProps> = ({
     { city: 'Bali (Canggu / Ubud)', monthlyCost: 65000, daysToBreakEven: calculateEarnToTravelRatio(monthlyGrossINR, 65000).billableDaysNeeded },
   ];
 
-  const handleAddExpense = (e: React.FormEvent) => {
+  const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newExpenseTitle.trim()) return;
 
+    const tempId = `exp-${Date.now()}`;
     const created: ExpenseLog = {
-      id: `exp-${Date.now()}`,
+      id: tempId,
       category: newExpenseCategory,
       title: newExpenseTitle,
       amountINR: newExpenseAmount,
@@ -92,10 +125,38 @@ export const FinancialPassportView: React.FC<FinancialPassportViewProps> = ({
     setExpenses([created, ...expenses]);
     setNewExpenseTitle('');
     onShowToast(`Logged expense: ${currencySymbol}${newExpenseAmount} for ${newExpenseTitle}`);
+
+    if (isSupabaseConfigured && user) {
+      try {
+        const { data } = await supabase
+          .from('user_expenses')
+          .insert({
+            user_id: user.id,
+            category: newExpenseCategory,
+            title: newExpenseTitle,
+            amount_inr: newExpenseAmount,
+          })
+          .select()
+          .single();
+
+        if (data) {
+          setExpenses((prev) => prev.map((exp) => (exp.id === tempId ? { ...exp, id: data.id } : exp)));
+        }
+      } catch (err) {
+        console.warn('Failed to sync expense to Supabase:', err);
+      }
+    }
   };
 
-  const handleDeleteExpense = (id: string) => {
+  const handleDeleteExpense = async (id: string) => {
     setExpenses(expenses.filter((e) => e.id !== id));
+    if (isSupabaseConfigured && user && !id.startsWith('exp-')) {
+      try {
+        await supabase.from('user_expenses').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Failed to delete expense from Supabase:', err);
+      }
+    }
   };
 
   return (

@@ -19,6 +19,8 @@ import {
   NomadMember,
   CompanionRequest,
 } from '../data/communityData';
+import { useAuth } from '../context/AuthContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface CommunityViewProps {
   onShowToast: (msg: string) => void;
@@ -29,6 +31,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
   onShowToast,
   onNavigateToPlanner,
 }) => {
+  const { profile, user } = useAuth();
   const [activeCity, setActiveCity] = useState<string>('All');
   const [activeTab, setActiveTab] = useState<'members' | 'events' | 'companions'>('members');
   const [selectedMemberForChat, setSelectedMemberForChat] = useState<NomadMember | null>(null);
@@ -62,15 +65,33 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
     (c) => activeCity === 'All' || c.destination.toLowerCase().includes(activeCity.toLowerCase())
   );
 
-  const handleSendMemberMessage = (e: React.FormEvent) => {
+  const handleSendMemberMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     setChatSent(true);
+
+    if (isSupabaseConfigured && user) {
+      try {
+        await supabase.from('community_messages').insert([
+          {
+            sender_id: user.id,
+            recipient_id: selectedMemberForChat?.id || 'target-nomad',
+            sender_name: profile?.fullName || 'Banjaare Nomad',
+            sender_avatar: profile?.avatarUrl,
+            message: chatMessage || 'Hey! Would love to connect for a coffee & cowork session.',
+            invite_type: 'coffee_cowork',
+          },
+        ]);
+      } catch {
+        // fallback
+      }
+    }
+
     setTimeout(() => {
       onShowToast(`Coffee invite sent to ${selectedMemberForChat?.name}!`);
       setSelectedMemberForChat(null);
       setChatSent(false);
       setChatMessage('');
-    }, 1000);
+    }, 800);
   };
 
   const handleToggleRsvp = (eventId: string, title: string) => {
@@ -83,12 +104,12 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
     }
   };
 
-  const handleCreateCompanionRequest = (e: React.FormEvent) => {
+  const handleCreateCompanionRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     const newEntry: CompanionRequest = {
       id: `comp-${Date.now()}`,
-      authorName: newCompAuthor,
-      authorRole: newCompRole,
+      authorName: newCompAuthor || profile?.fullName || 'Fellow Nomad',
+      authorRole: newCompRole || profile?.role || 'Remote Professional',
       destination: newCompDest,
       timeframe: 'Next 30 Days',
       targetBudgetINR: Number(newCompBudget),
@@ -96,6 +117,25 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
       details: newCompDetails,
       postedAgo: 'Just now',
     };
+
+    if (isSupabaseConfigured && user) {
+      try {
+        await supabase.from('companion_posts').insert([
+          {
+            author_id: user.id,
+            author_name: newEntry.authorName,
+            author_role: newEntry.authorRole,
+            destination: newEntry.destination,
+            budget_inr: newEntry.targetBudgetINR,
+            looking_for: newEntry.lookingFor,
+            details: newEntry.details,
+          },
+        ]);
+      } catch {
+        // fallback
+      }
+    }
+
     setCompanionRequests([newEntry, ...companionRequests]);
     setShowCompanionModal(false);
     onShowToast('Your companion / villa split request is now live in the community hub!');

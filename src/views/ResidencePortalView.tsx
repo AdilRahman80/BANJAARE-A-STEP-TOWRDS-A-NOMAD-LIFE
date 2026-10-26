@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Building2,
   MapPin,
@@ -13,6 +13,8 @@ import {
   Plus,
 } from 'lucide-react';
 import { RESIDENCE_GIGS_DATA, ResidenceGig } from '../data/residenceGigs';
+import { useAuth } from '../context/AuthContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface ResidencePortalViewProps {
   onShowToast: (msg: string) => void;
@@ -23,6 +25,7 @@ export const ResidencePortalView: React.FC<ResidencePortalViewProps> = ({
   onShowToast,
   onNavigateToPlanner: _onNavigateToPlanner,
 }) => {
+  const { user, profile } = useAuth();
   const [residencies, setResidencies] = useState<ResidenceGig[]>(RESIDENCE_GIGS_DATA);
   const [selectedCity, setSelectedCity] = useState<string>('All');
   const [selectedResidencyForApply, setSelectedResidencyForApply] = useState<ResidenceGig | null>(null);
@@ -34,6 +37,15 @@ export const ResidencePortalView: React.FC<ResidencePortalViewProps> = ({
   const [applicantPitch, setApplicantPitch] = useState<string>('');
   const [selectedStartDate, setSelectedStartDate] = useState<string>('2026-11-15');
   const [appliedSuccess, setAppliedSuccess] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (profile?.fullName && !applicantName) {
+      setApplicantName(profile.fullName);
+    }
+    if (user?.email && !applicantEmail) {
+      setApplicantEmail(user.email);
+    }
+  }, [profile, user]);
 
   // Host a Nomad Modal
   const [showHostModal, setShowHostModal] = useState<boolean>(false);
@@ -54,9 +66,26 @@ export const ResidencePortalView: React.FC<ResidencePortalViewProps> = ({
     return r.city.toLowerCase().includes(selectedCity.toLowerCase());
   });
 
-  const handleApplySubmit = (e: React.FormEvent) => {
+  const handleApplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAppliedSuccess(true);
+
+    if (isSupabaseConfigured && user) {
+      try {
+        await supabase.from('residency_applications').insert({
+          user_id: user.id,
+          residency_id: selectedResidencyForApply?.id,
+          applicant_name: applicantName || profile?.fullName || 'Nomad Creator',
+          applicant_email: applicantEmail || user.email || '',
+          portfolio_url: applicantPortfolio,
+          pitch_statement: applicantPitch,
+          start_date: selectedStartDate,
+        });
+      } catch (err) {
+        console.warn('Could not sync residency application to Supabase:', err);
+      }
+    }
+
     setTimeout(() => {
       onShowToast(`Residency application submitted to ${selectedResidencyForApply?.propertyTitle}!`);
       setAppliedSuccess(false);

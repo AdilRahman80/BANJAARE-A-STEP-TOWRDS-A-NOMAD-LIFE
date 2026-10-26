@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Navbar, NavTab } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { DestinationModal } from './components/destinations/DestinationModal';
+import { AuthModal } from './components/auth/AuthModal';
 
 import { HomeView } from './views/HomeView';
 import { GigsView } from './views/GigsView';
@@ -221,6 +222,8 @@ export function App() {
     });
   }, [showToast]);
 
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   return (
     <div className="min-h-screen flex flex-col bg-[#071317] text-[#FAFDFD] selection:bg-[#C98833] selection:text-black">
       
@@ -252,6 +255,7 @@ export function App() {
         onTabChange={handleTabChange}
         theme={theme}
         onToggleTheme={toggleTheme}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
       />
 
       {/* Dedicated Page Views */}
@@ -375,6 +379,13 @@ export function App() {
         onClose={() => setPreviewDestination(null)}
         currentCurrency={selectedCurrency}
         onSelectForCalculator={handleSelectForCalculator}
+      />
+
+      {/* Nomad Passport & Cloud Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onShowToast={showToast}
       />
 
     </div>

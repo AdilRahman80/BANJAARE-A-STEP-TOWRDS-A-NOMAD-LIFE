@@ -97,12 +97,13 @@ NomadX is crafted in the editorial luxury tradition of **Vita Travel** and **Elo
 | Layer | Technologies |
 |---|---|
 | **Core Framework** | React 18.3, TypeScript 5.5, Vite 5.4 |
+| **Backend & Auth** | Supabase JS client (`@supabase/supabase-js`), PostgreSQL schema with RLS, zero-crash local fallback |
 | **Styling & Theme** | Tailwind CSS 3.4, Vanilla CSS variables, Glassmorphism |
 | **Typography** | Playfair Display (Serif Editorial), Outfit & Inter (Modern Sans) |
 | **Icons** | Lucide React (100% crisp SVGs) |
 | **Testing** | Vitest 2.1 (43 unit tests passing) |
 | **Offline & PWA** | Service Worker (`sw.js`), Web App Manifest (`manifest.webmanifest`) |
-| **Data Architecture** | Pure client-side TypeScript data modules with local storage caching |
+| **Data Architecture** | Supabase Cloud PostgreSQL with seamless local offline demo fallback |
 
 ---
 
@@ -148,6 +149,26 @@ npm test
 # 4. Build production bundle
 npm run build
 ```
+
+---
+
+## 🗄️ Optional Supabase Backend Setup
+
+Banjaare functions out of the box with zero setup using an in-memory & local fallback mode (demo nomad profile: Kabir Sharma).
+
+To enable persistent live cloud database & authentication:
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Go to the SQL Editor and run the SQL script located in [`supabase/schema.sql`](supabase/schema.sql).
+3. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+4. Fill in your project URL and public anon key in `.env`:
+   ```env
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-public-key
+   ```
+5. Restart the development server (`npm run dev`). Your app will now persist live profiles, community messages, companion travel posts, residency applications, and expenses directly to Supabase with PostgreSQL Row Level Security (RLS)!
 
 ---
 

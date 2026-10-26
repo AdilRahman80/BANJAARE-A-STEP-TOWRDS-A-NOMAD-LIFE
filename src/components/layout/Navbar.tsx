@@ -15,9 +15,11 @@ import {
   PackageCheck,
   Sun,
   Moon,
+  User,
 } from 'lucide-react';
 import { Currency } from '../../types/trip';
 import { CURRENCIES } from '../../data/destinations';
+import { useAuth } from '../../context/AuthContext';
 
 export type NavTab =
   | 'home'
@@ -39,6 +41,7 @@ interface NavbarProps {
   onTabChange: (tab: NavTab) => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
+  onOpenAuth: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -48,7 +51,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onTabChange,
   theme,
   onToggleTheme,
+  onOpenAuth,
 }) => {
+  const { profile } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems: { id: NavTab; label: string; icon: React.ElementType }[] = [
@@ -170,6 +175,30 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </button>
 
+            {/* Nomad Passport / Auth Profile Button */}
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-[#0F262E] hover:bg-[#14313B] border border-[#1D4552] text-xs font-semibold text-[#FAFDFD] transition-colors"
+              title="Nomad Passport & Auth Profile"
+            >
+              {profile ? (
+                <>
+                  <img
+                    src={profile.avatarUrl}
+                    alt={profile.fullName}
+                    className="w-4 h-4 rounded-full object-cover border border-[#C98833]"
+                  />
+                  <span className="hidden xl:inline font-bold text-[#C98833]">{profile.fullName.split(' ')[0]}</span>
+                </>
+              ) : (
+                <>
+                  <User className="w-3.5 h-3.5 text-[#C98833]" />
+                  <span className="hidden xl:inline">Passport</span>
+                </>
+              )}
+            </button>
+
             {/* CTA */}
             <button
               type="button"
@@ -191,6 +220,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Toggle Theme"
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
+
+            {/* Mobile Auth Button */}
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="p-2 rounded-xl bg-[#0F262E] text-[#C98833] border border-[#1D4552]"
+              title="Nomad Profile"
+            >
+              <User className="w-4 h-4" />
             </button>
 
             <select
